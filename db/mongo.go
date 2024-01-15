@@ -20,18 +20,18 @@ const dbName = "fiber-hrms"
 const mongoURI = "mongodb://localhost:27017/" + dbName
 
 func Connect() error {
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error creating MongoDB client:", err)
 		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	err = client.Connect(ctx)
+	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error connecting to MongoDB:", err)
 		return err
 	}
 
@@ -40,12 +40,6 @@ func Connect() error {
 		Client: client,
 		Db:     db,
 	}
-
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			log.Fatal(err)
-		}
-	}()
 
 	return nil
 }
